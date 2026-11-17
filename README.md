@@ -11,7 +11,7 @@ A React Native (Expo) app for gym-goers.
   - 5 days: Chest / Back / Shoulders / Legs / Arms
   - 6 days: PPL ×2
 - Today's workout on the home screen (rest-day aware)
-- Per-exercise sets × reps, "Watch demo" short video link, and mark-as-done
+- Per-exercise sets × reps, in-app demo video player (WebView), and mark-as-done
 - Health screen: BMI + category, healthy weight range, BMR, calorie target for goal, protein and water targets
 - Profile saved on the device (AsyncStorage)
 
@@ -29,5 +29,5 @@ npm test
 ```
 
 ## Notes
-- "Watch demo" opens a YouTube Shorts search for that exercise. To use your own videos later, add a `video` URL field per exercise in `src/data/exercises.js` and play it in `src/screens/Workout.js`.
+- "Watch demo" plays inside the app (WebView). Exercises with a `video` YouTube id in `src/data/exercises.js` play directly; others open an in-app YouTube search. Add more ids there.
 - Health numbers are general estimates (Mifflin-St Jeor), not medical advice.

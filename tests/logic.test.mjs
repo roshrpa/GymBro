@@ -50,5 +50,11 @@ test('summary numbers are sane', () => {
 });
 
 test('video url is encoded', () => {
-  assert.ok(videoUrl('Push Ups').startsWith('https://www.youtube.com/results?search_query=Push%20Ups'));
+  assert.ok(videoUrl('Push Ups').startsWith('https://m.youtube.com/results?search_query=Push%20Ups'));
+});
+
+test('video ids look like YouTube ids', () => {
+  for (const list of Object.values(EXERCISES)) {
+    for (const ex of list) if (ex.video) assert.match(ex.video, /^[\w-]{11}$/, ex.name);
+  }
 });

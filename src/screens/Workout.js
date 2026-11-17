@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { S, C } from '../theme';
-import { MUSCLE_LABEL, videoUrl } from '../data/exercises';
+import { MUSCLE_LABEL } from '../data/exercises';
+import VideoPlayer from '../components/VideoPlayer';
 
 export default function Workout({ workout, onBack }) {
   const [done, setDone] = useState({});
+  const [playing, setPlaying] = useState(null);
   const total = workout.blocks.reduce((n, b) => n + b.items.length, 0);
   const count = Object.values(done).filter(Boolean).length;
 
@@ -28,7 +30,7 @@ export default function Workout({ workout, onBack }) {
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                   <TouchableOpacity
                     style={[S.chip, { borderColor: C.accent }]}
-                    onPress={() => Linking.openURL(videoUrl(ex.name))}
+                    onPress={() => setPlaying(ex)}
                   >
                     <Text style={{ color: C.accent, fontWeight: '700' }}>▶ Watch demo</Text>
                   </TouchableOpacity>
@@ -44,6 +46,7 @@ export default function Workout({ workout, onBack }) {
           })}
         </View>
       ))}
+      <VideoPlayer exercise={playing} onClose={() => setPlaying(null)} />
     </ScrollView>
   );
 }
