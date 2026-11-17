@@ -13,7 +13,13 @@ A React Native (Expo) app for gym-goers.
 - Today's workout on the home screen (rest-day aware)
 - Per-exercise sets × reps, in-app demo video player (WebView), and mark-as-done
 - Health screen: BMI + category, healthy weight range, BMR, calorie target for goal, protein and water targets
-- Profile saved on the device (AsyncStorage)
+- Calculators: BMI, ideal weight (4 formulas), calories (BMR/TDEE + goal), macros, body fat (US Navy)
+- Daily diet plan: calorie/protein/carb/fat targets and a 4-meal plan with food quantities (veg / non-veg)
+- Profile (incl. experience, food preference, weight history) saved on the device (AsyncStorage)
+
+## Data / Firebase later
+`src/profileModel.js` defines the user document shape and `src/storage.js` is the only file that touches storage.
+To add Firebase Auth + Firestore later, keep `loadProfile` / `saveProfile` and change their bodies to read/write `users/{uid}`.
 
 ## Run
 ```bash
@@ -29,5 +35,5 @@ npm test
 ```
 
 ## Notes
-- "Watch demo" plays inside the app (WebView). Exercises with a `video` YouTube id in `src/data/exercises.js` play directly; others open an in-app YouTube search. Add more ids there.
+- "Watch demo" plays inside the app (WebView). Every exercise has a `video` YouTube id in `src/data/exercises.js` that plays directly; the "Browse more demos" link opens an in-app YouTube search if a video is unavailable. Swap an id there to change a video.
 - Health numbers are general estimates (Mifflin-St Jeor), not medical advice.

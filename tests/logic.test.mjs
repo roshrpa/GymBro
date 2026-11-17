@@ -53,8 +53,22 @@ test('video url is encoded', () => {
   assert.ok(videoUrl('Push Ups').startsWith('https://m.youtube.com/results?search_query=Push%20Ups'));
 });
 
-test('video ids look like YouTube ids', () => {
+test('every exercise has a well-formed, unique-per-exercise YouTube id', () => {
+  const seen = new Set();
   for (const list of Object.values(EXERCISES)) {
-    for (const ex of list) if (ex.video) assert.match(ex.video, /^[\w-]{11}$/, ex.name);
+    for (const ex of list) {
+      assert.ok(ex.video, `${ex.name} has no video`);
+      assert.match(ex.video, /^[\w-]{11}$/, ex.name);
+      assert.ok(!seen.has(ex.video), `duplicate id ${ex.video}`);
+      seen.add(ex.video);
+    }
+  }
+});
+
+test('every exercise used by a split exists and has sets/reps', () => {
+  for (const n of [2, 3, 4, 5, 6]) {
+    for (const d of buildPlan(n)) for (const b of d.blocks) for (const ex of b.items) {
+      assert.ok(ex.name && ex.sets > 0 && ex.reps, ex.name);
+    }
   }
 });
