@@ -3,16 +3,21 @@ import { SafeAreaView, Text, TouchableOpacity, View, ActivityIndicator, Platform
 import { StatusBar } from 'expo-status-bar';
 import { loadProfile, saveProfile } from './src/storage';
 import { buildPlan } from './src/data/splits';
+import { applyProfileUpdate } from './src/profileModel';
 import { C } from './src/theme';
 import Onboarding from './src/screens/Onboarding';
 import Home from './src/screens/Home';
 import Schedule from './src/screens/Schedule';
 import Workout from './src/screens/Workout';
 import Health from './src/screens/Health';
+import Diet from './src/screens/Diet';
+import Calculators from './src/screens/Calculators';
 
 const TABS = [
   { key: 'home', label: 'Today', icon: '🏠' },
   { key: 'schedule', label: 'Plan', icon: '📅' },
+  { key: 'diet', label: 'Diet', icon: '🍽️' },
+  { key: 'calc', label: 'Calc', icon: '🧮' },
   { key: 'health', label: 'Health', icon: '❤️' },
 ];
 
@@ -33,8 +38,9 @@ export default function App() {
   const plan = useMemo(() => (profile ? buildPlan(profile.daysPerWeek) : []), [profile]);
 
   const onSave = async (p) => {
-    await saveProfile(p);
-    setProfile(p);
+    const full = applyProfileUpdate(profile, p);
+    await saveProfile(full);
+    setProfile(full);
     setEditing(false);
     setTab('home');
   };
@@ -47,6 +53,8 @@ export default function App() {
   else if (workout) body = <Workout workout={workout} onBack={() => setWorkout(null)} />;
   else if (tab === 'home') body = <Home profile={profile} plan={plan} onOpenWorkout={setWorkout} />;
   else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} />;
+  else if (tab === 'diet') body = <Diet profile={profile} />;
+  else if (tab === 'calc') body = <Calculators profile={profile} />;
   else body = <Health profile={profile} onEdit={() => setEditing(true)} />;
 
   const showTabs = !loading && profile && !editing && !workout;

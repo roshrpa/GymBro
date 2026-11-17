@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { migrateProfile } from './profileModel';
 
+// Local storage "repository". To move to Firebase later, keep these two function
+// signatures and change the bodies to read/write Firestore `users/{uid}`.
 const KEY = 'gymbuddy.profile.v1';
 
 export async function loadProfile() {
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? migrateProfile(JSON.parse(raw)) : null;
   } catch {
     return null;
   }

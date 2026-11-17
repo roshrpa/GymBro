@@ -25,6 +25,8 @@ export default function Onboarding({ initial, onDone }) {
   const [weight, setWeight] = useState(initial ? String(initial.weightKg) : '');
   const [goal, setGoal] = useState(initial?.goal ?? 'maintain');
   const [days, setDays] = useState(initial?.daysPerWeek ?? 3);
+  const [experience, setExperience] = useState(initial?.experience ?? 'beginner');
+  const [dietPref, setDietPref] = useState(initial?.dietPref ?? 'nonveg');
 
   const submit = () => {
     const a = Number(age), h = Number(height), w = Number(weight);
@@ -32,7 +34,7 @@ export default function Onboarding({ initial, onDone }) {
       Alert.alert('Check your details', 'Please enter a valid age, height (cm) and weight (kg).');
       return;
     }
-    onDone({ name: name.trim() || 'Athlete', age: a, sex, heightCm: h, weightKg: w, goal, daysPerWeek: days });
+    onDone({ name: name.trim() || 'Athlete', age: a, sex, heightCm: h, weightKg: w, goal, daysPerWeek: days, experience, dietPref });
   };
 
   return (
@@ -68,6 +70,24 @@ export default function Onboarding({ initial, onDone }) {
 
       <Text style={S.label}>Workout days per week</Text>
       <Chips value={days} onChange={setDays} options={[2, 3, 4, 5, 6].map((d) => ({ value: d, label: `${d} days` }))} />
+
+      <Text style={S.label}>Training experience</Text>
+      <Chips
+        value={experience}
+        onChange={setExperience}
+        options={[
+          { value: 'beginner', label: 'Beginner' },
+          { value: 'intermediate', label: 'Intermediate' },
+          { value: 'advanced', label: 'Advanced' },
+        ]}
+      />
+
+      <Text style={S.label}>Food preference</Text>
+      <Chips
+        value={dietPref}
+        onChange={setDietPref}
+        options={[{ value: 'nonveg', label: 'Non-veg' }, { value: 'veg', label: 'Vegetarian' }]}
+      />
 
       <TouchableOpacity style={S.btn} onPress={submit}>
         <Text style={S.btnText}>{initial ? 'Save' : 'Create my plan'}</Text>

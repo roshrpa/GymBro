@@ -57,6 +57,15 @@ export default function Health({ profile, onEdit }) {
         <Row k="Water" v={`${h.water} L`} />
       </View>
 
+      {(profile.weightHistory || []).length > 1 && (
+        <View style={S.card}>
+          <Text style={S.h2}>Weight history</Text>
+          {profile.weightHistory.slice(-6).reverse().map((e, i) => (
+            <Row key={i} k={new Date(e.date).toDateString()} v={`${e.kg} kg`} />
+          ))}
+        </View>
+      )}
+
       <Text style={[S.sub, { fontSize: 12 }]}>
         These are general estimates, not medical advice. BMI does not account for muscle mass. See a doctor or dietitian for personal guidance.
       </Text>
