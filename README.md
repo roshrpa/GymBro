@@ -37,3 +37,11 @@ npm test
 ## Notes
 - "Watch demo" plays inside the app (WebView). Every exercise has a `video` YouTube id in `src/data/exercises.js` that plays directly; the "Browse more demos" link opens an in-app YouTube search if a video is unavailable. Swap an id there to change a video.
 - Health numbers are general estimates (Mifflin-St Jeor), not medical advice.
+
+## Download the Android APK
+Every push to `main` builds an APK automatically (GitHub Actions, `.github/workflows/build-apk.yml`).
+1. Open the repo's **Releases** page and download `GymBro.apk` from the "latest" release (or **Actions** -> latest run -> Artifacts).
+2. Copy it to your Android phone, open it, and allow "install unknown apps" when asked.
+
+Alternative with an Expo account: `npx eas-cli build -p android --profile preview` gives a download link.
+iPhones cannot install APKs; use Expo Go for iOS (see Run above).

@@ -6,7 +6,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0f1115",
-    "ios": { "supportsTablet": false },
-    "android": { "package": "com.gymbuddy.app" }
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.gymbuddy.app",
+      "versionCode": 1
+    }
   }
 }
