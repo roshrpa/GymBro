@@ -16,6 +16,8 @@ const LEGACY_PROFILE = 'gymbuddy.profile.v1';
 const LEGACY_LOGS = 'gymbuddy.logs.v1';
 const pKey = () => (uid ? `gymbro.${uid}.profile` : LEGACY_PROFILE);
 const lKey = () => (uid ? `gymbro.${uid}.logs` : LEGACY_LOGS);
+const dKey = () => (uid ? `gymbro.${uid}.diary` : 'gymbro.local.diary');
+const diaryRef = () => doc(db, 'users', uid, 'data', 'diary');
 const CLOUD_MAX_SESSIONS = 300; // keeps the document well under Firestore's 1 MB limit
 
 const clean = (o) => JSON.parse(JSON.stringify(o)); // Firestore rejects `undefined`
@@ -90,6 +92,35 @@ export async function saveLogs(logs) {
   if (uid) {
     try {
       await setDoc(logsRef(), clean({ sessions: logs.slice(-CLOUD_MAX_SESSIONS), updatedAt: Date.now() }));
+    } catch {
+      /* will sync on the next save */
+    }
+  }
+}
+
+// Food & activity diary: array of entries (see src/utils/diary.js). Firestore: users/{uid}/data/diary
+export async function loadDiary() {
+  if (uid) {
+    try {
+      const snap = await getDoc(diaryRef());
+      if (snap.exists() && Array.isArray(snap.data().entries)) {
+        const e = snap.data().entries;
+        await AsyncStorage.setItem(dKey(), JSON.stringify(e));
+        return e;
+      }
+    } catch {
+      /* offline */
+    }
+  }
+  const local = await readJson(dKey());
+  return Array.isArray(local) ? local : [];
+}
+
+export async function saveDiary(entries) {
+  await AsyncStorage.setItem(dKey(), JSON.stringify(entries));
+  if (uid) {
+    try {
+      await setDoc(diaryRef(), clean({ entries, updatedAt: Date.now() }));
     } catch {
       /* will sync on the next save */
     }

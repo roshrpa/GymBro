@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View, ActivityIndicator, Platform, StatusBar as RNStatusBar } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { loadProfile, saveProfile, loadLogs, saveLogs, setStorageUser } from './src/storage';
+import { loadProfile, saveProfile, loadLogs, saveLogs, loadDiary, saveDiary, setStorageUser } from './src/storage';
 import { watchAuth, signOut } from './src/auth';
 import Auth from './src/screens/Auth';
 import { buildPlan } from './src/data/splits';
@@ -15,11 +15,14 @@ import Health from './src/screens/Health';
 import Diet from './src/screens/Diet';
 import Calculators from './src/screens/Calculators';
 import Progress from './src/screens/Progress';
+import Diary from './src/screens/Diary';
+import { pruneDiary } from './src/utils/diary';
 import More from './src/screens/More';
 
 const TABS = [
   { key: 'home', label: 'Today', icon: '🏠' },
   { key: 'schedule', label: 'Plan', icon: '📅' },
+  { key: 'diary', label: 'Diary', icon: '🍴' },
   { key: 'progress', label: 'Progress', icon: '📈' },
   { key: 'diet', label: 'Diet', icon: '🍽️' },
   { key: 'more', label: 'More', icon: '☰' },
@@ -31,6 +34,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [diary, setDiary] = useState([]);
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState('home');
   const [moreScreen, setMoreScreen] = useState(null);
@@ -44,6 +48,7 @@ export default function App() {
     if (user === undefined) return;
     setProfile(null);
     setLogs([]);
+    setDiary([]);
     setWorkout(null);
     setEditing(false);
     setTab('home');
@@ -55,9 +60,10 @@ export default function App() {
     }
     setLoading(true);
     setStorageUser(user.uid);
-    Promise.all([loadProfile(), loadLogs()]).then(([p, l]) => {
+    Promise.all([loadProfile(), loadLogs(), loadDiary()]).then(([p, l, d]) => {
       setProfile(p);
       setLogs(l);
+      setDiary(d);
       setLoading(false);
     });
   }, [user]);
@@ -77,6 +83,12 @@ export default function App() {
     const full = applyProfileUpdate(profile, { ...profile, weightKg: kg });
     await saveProfile(full);
     setProfile(full);
+  };
+
+  const onChangeDiary = async (next) => {
+    const pruned = pruneDiary(next);
+    setDiary(pruned);
+    await saveDiary(pruned);
   };
 
   const onFinishWorkout = async (session) => {
@@ -108,6 +120,7 @@ export default function App() {
     );
   } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} />;
   else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} />;
+  else if (tab === 'diary') body = <Diary profile={profile} logs={logs} entries={diary} onChange={onChangeDiary} />;
   else if (tab === 'progress') body = <Progress profile={profile} logs={logs} onLogWeight={onLogWeight} />;
   else if (tab === 'diet') body = <Diet profile={profile} />;
   else if (moreScreen) {
