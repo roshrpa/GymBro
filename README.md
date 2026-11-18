@@ -39,7 +39,7 @@ npm test
 ```
 
 ## Notes
-- "Watch demo" plays inside the app (WebView). Every exercise has a `video` YouTube id in `src/data/exercises.js` that plays directly; the "Browse more demos" link opens an in-app YouTube search if a video is unavailable. Swap an id there to change a video.
+- "Watch demo" plays inside the app (WebView, YouTube mobile watch page, so videos that block embedding still work). Every exercise has a `video` YouTube id in `src/data/exercises.js` that plays directly; the "Browse more demos" link opens an in-app YouTube search if a video is unavailable. Swap an id there to change a video.
 - Health numbers are general estimates (Mifflin-St Jeor), not medical advice.
 
 ## Download the Android APK

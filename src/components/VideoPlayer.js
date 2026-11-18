@@ -2,19 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { C } from '../theme';
-import { embedHtml, videoUrl } from '../data/exercises';
+import { videoUrl } from '../data/exercises';
 
 // Plays the exercise demo inside the app (no external app is opened).
+// We load YouTube's mobile watch page instead of the embed player, because many videos
+// disable embedding (error 152) but still play on the normal watch page.
 export default function VideoPlayer({ exercise, onClose }) {
   const [searchMode, setSearchMode] = useState(false);
 
   useEffect(() => setSearchMode(false), [exercise]);
   if (!exercise) return null;
 
-  const useEmbed = !!exercise.video && !searchMode;
-  const source = useEmbed
-    ? { html: embedHtml(exercise.video), baseUrl: 'https://www.youtube.com' }
-    : { uri: videoUrl(exercise.name) };
+  const showVideo = !!exercise.video && !searchMode;
+  const uri = showVideo ? `https://m.youtube.com/watch?v=${exercise.video}` : videoUrl(exercise.name);
 
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
@@ -30,19 +30,23 @@ export default function VideoPlayer({ exercise, onClose }) {
 
         <View style={{ flex: 1, backgroundColor: '#000' }}>
           <WebView
-            key={useEmbed ? 'embed' : 'search'}
-            source={source}
-            originWhitelist={['*']}
+            key={uri}
+            source={{ uri }}
+            originWhitelist={['https://*', 'http://*']}
+            // keep everything inside the app: block intent:// and app-store redirects
+            onShouldStartLoadWithRequest={(req) => /^https?:\/\//i.test(req.url)}
+            setSupportMultipleWindows={false}
             allowsInlineMediaPlayback
             mediaPlaybackRequiresUserAction={false}
             allowsFullscreenVideo
             javaScriptEnabled
+            domStorageEnabled
             startInLoadingState
             renderLoading={() => <ActivityIndicator style={{ flex: 1 }} color={C.accent} />}
           />
         </View>
 
-        {useEmbed && (
+        {showVideo && (
           <TouchableOpacity style={{ padding: 14, alignItems: 'center' }} onPress={() => setSearchMode(true)}>
             <Text style={{ color: C.sub }}>Video not working? Browse more demos →</Text>
           </TouchableOpacity>

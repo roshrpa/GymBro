@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# only the newest push needs to build
+concurrency:
+  group: apk-build
+  cancel-in-progress: true
+
 jobs:
   apk:
     runs-on: ubuntu-latest
