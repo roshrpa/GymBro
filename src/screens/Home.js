@@ -15,33 +15,33 @@ export default function Home({ profile, plan, logs, onOpenWorkout }) {
 
   return (
     <ScrollView style={S.screen} contentContainerStyle={S.pad}>
-      <Text style={S.h1}>Hi {profile.name} 👋</Text>
+      <Text style={S.h1}>Hey, {profile.name}</Text>
       <Text style={[S.sub, { marginBottom: 18 }]}>{DAY_NAMES[today]}</Text>
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
         <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
-          <Text style={{ color: C.text, fontSize: 24, fontWeight: '800' }}>{workoutsThisWeek(logs)}/{profile.daysPerWeek}</Text>
+          <Text style={{ color: C.text, fontSize: 28, fontWeight: '900' }}>{workoutsThisWeek(logs)}/{profile.daysPerWeek}</Text>
           <Text style={S.sub}>This week</Text>
         </View>
         <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
-          <Text style={{ color: C.text, fontSize: 24, fontWeight: '800' }}>🔥 {streak}</Text>
+          <Text style={{ color: C.accent, fontSize: 28, fontWeight: '900' }}>{streak}</Text>
           <Text style={S.sub}>Week streak</Text>
         </View>
       </View>
 
       {todays ? (
-        <TouchableOpacity style={[S.card, { borderColor: C.accent }]} onPress={() => onOpenWorkout(todays)}>
-          <Text style={S.sub}>TODAY'S WORKOUT</Text>
-          <Text style={[S.h1, { marginTop: 6 }]}>{todays.title}</Text>
-          <Text style={S.sub}>{todays.blocks.map((b) => MUSCLE_LABEL[b.muscle]).join(' • ')}</Text>
-          <View style={S.btn}>
-            <Text style={S.btnText}>{doneToday ? 'Log another session ▶' : 'Start workout ▶'}</Text>
+        <TouchableOpacity style={[S.card, { backgroundColor: C.accent, borderColor: C.accent, padding: 22 }]} onPress={() => onOpenWorkout(todays)}>
+          <Text style={{ color: C.onAccent, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 }}>TODAY'S WORKOUT</Text>
+          <Text style={[S.h1, { marginTop: 6, color: C.onAccent, fontSize: 44, lineHeight: 44 }]}>{todays.title}</Text>
+          <Text style={{ color: C.onAccent, fontWeight: '600' }}>{todays.blocks.map((b) => MUSCLE_LABEL[b.muscle]).join(' • ')}</Text>
+          <View style={[S.btn, { backgroundColor: C.onAccent }]}>
+            <Text style={[S.btnText, { color: C.accent }]}>{doneToday ? 'Log another session ▶' : 'Start workout ▶'}</Text>
           </View>
         </TouchableOpacity>
       ) : (
         <View style={S.card}>
           <Text style={S.sub}>TODAY</Text>
-          <Text style={[S.h1, { marginTop: 6 }]}>Rest day 😴</Text>
+          <Text style={[S.h1, { marginTop: 6 }]}>Rest day</Text>
           <Text style={S.sub}>Recovery is when muscles grow. Eat well, sleep 7-8 hours, drink water.</Text>
         </View>
       )}

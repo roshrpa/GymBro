@@ -36,18 +36,18 @@ export default function RestTimer({ endAt, onAdjust, onDismiss }) {
   const Btn = ({ label, onPress }) => (
     <TouchableOpacity
       onPress={onPress}
-      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, borderWidth: 1, borderColor: C.border }}
+      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: C.onAccent }}
     >
-      <Text style={{ color: C.text, fontWeight: '700' }}>{label}</Text>
+      <Text style={{ color: C.accent, fontWeight: '800' }}>{label}</Text>
     </TouchableOpacity>
   );
 
   return (
     <View
       style={{
-        backgroundColor: over ? C.good : C.card,
+        backgroundColor: C.accent,
         borderTopWidth: 1,
-        borderTopColor: C.border,
+        borderTopColor: C.accent,
         padding: 12,
         flexDirection: 'row',
         alignItems: 'center',
@@ -55,8 +55,8 @@ export default function RestTimer({ endAt, onAdjust, onDismiss }) {
       }}
     >
       <View>
-        <Text style={{ color: over ? '#fff' : C.sub, fontSize: 12 }}>{over ? 'REST OVER' : 'REST'}</Text>
-        <Text style={{ color: '#fff', fontSize: 28, fontWeight: '800' }}>
+        <Text style={{ color: C.onAccent, fontSize: 12, fontWeight: '700' }}>{over ? 'REST OVER' : 'REST'}</Text>
+        <Text style={{ color: C.onAccent, fontSize: 30, fontWeight: '900' }}>
           {over ? 'Go! 💪' : `${mm}:${ss}`}
         </Text>
       </View>

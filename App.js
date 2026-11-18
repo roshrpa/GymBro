@@ -111,11 +111,11 @@ export default function App() {
       <StatusBar style="light" />
       <View style={{ flex: 1 }}>{body}</View>
       {showTabs && (
-        <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.border, backgroundColor: C.card }}>
+        <View style={{ flexDirection: 'row', borderTopWidth: 1, borderTopColor: C.border, backgroundColor: '#111114' }}>
           {TABS.map((t) => (
             <TouchableOpacity key={t.key} style={{ flex: 1, alignItems: 'center', paddingVertical: 10 }} onPress={() => changeTab(t.key)}>
               <Text style={{ fontSize: 20 }}>{t.icon}</Text>
-              <Text style={{ color: tab === t.key ? C.accent : C.sub, fontSize: 12, fontWeight: '600' }}>{t.label}</Text>
+              <Text style={{ color: tab === t.key ? C.accent : C.sub, fontSize: 12, fontWeight: tab === t.key ? '800' : '600' }}>{t.label}</Text>
             </TouchableOpacity>
           ))}
         </View>

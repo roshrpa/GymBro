@@ -232,7 +232,7 @@ export default function Workout({ workout, logs, onFinish, onBack }) {
                           borderColor: r.done ? C.good : C.border,
                         }}
                       >
-                        <Text style={{ color: r.done ? '#fff' : C.sub, fontWeight: '800', fontSize: 16 }}>
+                        <Text style={{ color: r.done ? C.onAccent : C.sub, fontWeight: '800', fontSize: 16 }}>
                           {r.done ? (r.pr ? '🏆' : '✓') : '○'}
                         </Text>
                       </TouchableOpacity>

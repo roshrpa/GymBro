@@ -163,7 +163,7 @@ function History({ logs }) {
                     borderWidth: isToday(d) ? 1 : 0, borderColor: C.text,
                   }}
                 >
-                  <Text style={{ color: days.has(d) ? '#fff' : C.text, fontWeight: days.has(d) ? '800' : '400' }}>{d}</Text>
+                  <Text style={{ color: days.has(d) ? C.onAccent : C.text, fontWeight: days.has(d) ? '800' : '400' }}>{d}</Text>
                 </View>
               ) : null}
             </View>
