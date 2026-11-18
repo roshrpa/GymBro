@@ -11,7 +11,11 @@ A React Native (Expo) app for gym-goers.
   - 5 days: Chest / Back / Shoulders / Legs / Arms
   - 6 days: PPL ×2
 - Today's workout on the home screen (rest-day aware)
-- Per-exercise sets × reps, in-app demo video player (WebView), and mark-as-done
+- Set-by-set logging (kg × reps) with last-time numbers and progressive-overload suggestions
+- Rest timer (60s-3min, +/-15s, vibrates when rest is over)
+- Personal records (PR badge), strength trend charts, body-weight log + chart
+- Workout history calendar, weekly streak, this-week counter
+- In-app demo video player (WebView) for every exercise
 - Health screen: BMI + category, healthy weight range, BMR, calorie target for goal, protein and water targets
 - Calculators: BMI, ideal weight (4 formulas), calories (BMR/TDEE + goal), macros, body fat (US Navy)
 - Daily diet plan: calorie/protein/carb/fat targets and a 4-meal plan with food quantities (veg / non-veg)

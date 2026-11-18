@@ -17,3 +17,20 @@ export async function loadProfile() {
 export async function saveProfile(profile) {
   await AsyncStorage.setItem(KEY, JSON.stringify(profile));
 }
+
+// Workout logs: array of sessions (see src/utils/logs.js). Firebase later: `users/{uid}/sessions`.
+const LOGS_KEY = 'gymbuddy.logs.v1';
+
+export async function loadLogs() {
+  try {
+    const raw = await AsyncStorage.getItem(LOGS_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveLogs(logs) {
+  await AsyncStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+}

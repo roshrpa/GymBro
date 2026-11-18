@@ -4,23 +4,39 @@ import { S, C } from '../theme';
 import { DAY_NAMES, workoutForWeekday } from '../data/splits';
 import { MUSCLE_LABEL } from '../data/exercises';
 import { summary } from '../utils/health';
+import { weekStreak, workoutsThisWeek } from '../utils/logs';
 
-export default function Home({ profile, plan, onOpenWorkout }) {
+export default function Home({ profile, plan, logs, onOpenWorkout }) {
   const today = new Date().getDay();
   const todays = workoutForWeekday(plan, today);
   const h = summary(profile);
+  const doneToday = logs.some((l) => new Date(l.date).toDateString() === new Date().toDateString());
+  const streak = weekStreak(logs);
 
   return (
     <ScrollView style={S.screen} contentContainerStyle={S.pad}>
       <Text style={S.h1}>Hi {profile.name} 👋</Text>
       <Text style={[S.sub, { marginBottom: 18 }]}>{DAY_NAMES[today]}</Text>
 
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
+        <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
+          <Text style={{ color: C.text, fontSize: 24, fontWeight: '800' }}>{workoutsThisWeek(logs)}/{profile.daysPerWeek}</Text>
+          <Text style={S.sub}>This week</Text>
+        </View>
+        <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
+          <Text style={{ color: C.text, fontSize: 24, fontWeight: '800' }}>🔥 {streak}</Text>
+          <Text style={S.sub}>Week streak</Text>
+        </View>
+      </View>
+
       {todays ? (
         <TouchableOpacity style={[S.card, { borderColor: C.accent }]} onPress={() => onOpenWorkout(todays)}>
           <Text style={S.sub}>TODAY'S WORKOUT</Text>
           <Text style={[S.h1, { marginTop: 6 }]}>{todays.title}</Text>
           <Text style={S.sub}>{todays.blocks.map((b) => MUSCLE_LABEL[b.muscle]).join(' • ')}</Text>
-          <View style={S.btn}><Text style={S.btnText}>Start workout ▶</Text></View>
+          <View style={S.btn}>
+            <Text style={S.btnText}>{doneToday ? 'Log another session ▶' : 'Start workout ▶'}</Text>
+          </View>
         </TouchableOpacity>
       ) : (
         <View style={S.card}>
