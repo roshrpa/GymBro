@@ -1,8 +1,7 @@
 name: Build Android APK
 
+# APK builds only run when started manually (Actions tab -> Run workflow)
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
