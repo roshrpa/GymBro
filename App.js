@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View, ActivityIndicator, Platform, StatusBar as RNStatusBar } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { loadProfile, saveProfile, loadLogs, saveLogs } from './src/storage';
+import { loadProfile, saveProfile, loadLogs, saveLogs, setStorageUser } from './src/storage';
+import { watchAuth, signOut } from './src/auth';
+import Auth from './src/screens/Auth';
 import { buildPlan } from './src/data/splits';
 import { applyProfileUpdate } from './src/profileModel';
 import { C } from './src/theme';
@@ -34,18 +36,36 @@ export default function App() {
   const [moreScreen, setMoreScreen] = useState(null);
   const [workout, setWorkout] = useState(null);
 
+  const [user, setUser] = useState(undefined); // undefined = checking, null = logged out
+
+  useEffect(() => watchAuth((u) => setUser(u || null)), []);
+
   useEffect(() => {
+    if (user === undefined) return;
+    setProfile(null);
+    setLogs([]);
+    setWorkout(null);
+    setEditing(false);
+    setTab('home');
+    setMoreScreen(null);
+    if (!user) {
+      setStorageUser(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setStorageUser(user.uid);
     Promise.all([loadProfile(), loadLogs()]).then(([p, l]) => {
       setProfile(p);
       setLogs(l);
       setLoading(false);
     });
-  }, []);
+  }, [user]);
 
   const plan = useMemo(() => (profile ? buildPlan(profile.daysPerWeek) : []), [profile]);
 
   const onSave = async (p) => {
-    const full = applyProfileUpdate(profile, p);
+    const full = { ...applyProfileUpdate(profile, p), email: user ? user.email : undefined };
     await saveProfile(full);
     setProfile(full);
     setEditing(false);
@@ -73,7 +93,8 @@ export default function App() {
   const topPad = Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0;
 
   let body;
-  if (loading) body = <ActivityIndicator style={{ flex: 1 }} color={C.accent} />;
+  if (user === undefined || (user && loading)) body = <ActivityIndicator style={{ flex: 1 }} color={C.accent} />;
+  else if (!user) body = <Auth />;
   else if (!profile || editing) body = <Onboarding initial={profile} onDone={onSave} />;
   else if (workout) {
     body = (
@@ -102,9 +123,9 @@ export default function App() {
         )}
       </View>
     );
-  } else body = <More onOpen={setMoreScreen} />;
+  } else body = <More onOpen={setMoreScreen} email={user && user.email} onLogout={signOut} />;
 
-  const showTabs = !loading && profile && !editing && !workout;
+  const showTabs = !!user && !loading && profile && !editing && !workout;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: C.bg, paddingTop: topPad }}>

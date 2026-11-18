@@ -49,3 +49,18 @@ Every push to `main` builds an APK automatically (GitHub Actions, `.github/workf
 
 Alternative with an Expo account: `npx eas-cli build -p android --profile preview` gives a download link.
 iPhones cannot install APKs; use Expo Go for iOS (see Run above).
+
+## Firebase (login + database)
+- Email/password login (Firebase Auth) and per-user data in Cloud Firestore: `users/{uid}` (profile) and `users/{uid}/data/logs` (workout sessions). AsyncStorage is kept as an offline cache.
+- Config lives in `src/firebase.js`. In the Firebase console enable **Authentication → Email/Password** and create **Firestore**, with these rules:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
+```
