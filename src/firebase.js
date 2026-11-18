@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Firebase web config (these values are public identifiers, not secrets;
@@ -25,4 +25,11 @@ try {
 }
 
 export { app, auth };
-export const db = getFirestore(app);
+// Long polling is the reliable transport inside React Native.
+let firestore;
+try {
+  firestore = initializeFirestore(app, { experimentalForceLongPolling: true });
+} catch {
+  firestore = getFirestore(app); // already initialised (fast refresh)
+}
+export const db = firestore;

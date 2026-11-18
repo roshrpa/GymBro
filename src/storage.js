@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { migrateProfile } from './profileModel';
+import { withTimeout } from './utils/async';
 
 // Repository: Firestore is the source of truth when a user is logged in; AsyncStorage is an
 // offline cache (and keeps the app usable without internet).
@@ -36,7 +37,7 @@ const logsRef = () => doc(db, 'users', uid, 'data', 'logs');
 export async function loadProfile() {
   if (uid) {
     try {
-      const snap = await getDoc(profileRef());
+      const snap = await withTimeout(getDoc(profileRef()));
       if (snap.exists()) {
         const p = migrateProfile(snap.data());
         await AsyncStorage.setItem(pKey(), JSON.stringify(p));
@@ -59,7 +60,7 @@ export async function saveProfile(profile) {
   await AsyncStorage.setItem(pKey(), JSON.stringify(profile));
   if (uid) {
     try {
-      await setDoc(profileRef(), clean(profile));
+      await withTimeout(setDoc(profileRef(), clean(profile)));
     } catch {
       /* will sync on the next save */
     }
@@ -69,7 +70,7 @@ export async function saveProfile(profile) {
 export async function loadLogs() {
   if (uid) {
     try {
-      const snap = await getDoc(logsRef());
+      const snap = await withTimeout(getDoc(logsRef()));
       if (snap.exists() && Array.isArray(snap.data().sessions)) {
         const s = snap.data().sessions;
         await AsyncStorage.setItem(lKey(), JSON.stringify(s));
@@ -91,7 +92,7 @@ export async function saveLogs(logs) {
   await AsyncStorage.setItem(lKey(), JSON.stringify(logs));
   if (uid) {
     try {
-      await setDoc(logsRef(), clean({ sessions: logs.slice(-CLOUD_MAX_SESSIONS), updatedAt: Date.now() }));
+      await withTimeout(setDoc(logsRef(), clean({ sessions: logs.slice(-CLOUD_MAX_SESSIONS), updatedAt: Date.now() })));
     } catch {
       /* will sync on the next save */
     }
@@ -102,7 +103,7 @@ export async function saveLogs(logs) {
 export async function loadDiary() {
   if (uid) {
     try {
-      const snap = await getDoc(diaryRef());
+      const snap = await withTimeout(getDoc(diaryRef()));
       if (snap.exists() && Array.isArray(snap.data().entries)) {
         const e = snap.data().entries;
         await AsyncStorage.setItem(dKey(), JSON.stringify(e));
@@ -120,7 +121,7 @@ export async function saveDiary(entries) {
   await AsyncStorage.setItem(dKey(), JSON.stringify(entries));
   if (uid) {
     try {
-      await setDoc(diaryRef(), clean({ entries, updatedAt: Date.now() }));
+      await withTimeout(setDoc(diaryRef(), clean({ entries, updatedAt: Date.now() })));
     } catch {
       /* will sync on the next save */
     }
