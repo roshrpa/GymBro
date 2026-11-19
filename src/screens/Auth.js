@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { S, C } from '../theme';
 import { signIn, signUp, resetPassword, friendlyError } from '../auth';
 import { googleEnabled, signInWithGoogle, googleErrorMessage } from '../googleAuth';
@@ -58,8 +58,9 @@ export default function Auth() {
   return (
     <KeyboardAvoidingView style={S.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={[S.pad, { paddingTop: 70 }]} keyboardShouldPersistTaps="handled">
+        <Image source={require('../../assets/logo.png')} style={{ width: 96, height: 96, marginBottom: 10 }} />
         <Text style={{ color: C.accent, fontSize: 44, fontWeight: '900', letterSpacing: 1 }}>GYMBRO</Text>
-        <Text style={[S.sub, { marginBottom: 28 }]}>Train smart. Track everything.</Text>
+        <Text style={[S.sub, { marginBottom: 28 }]}>Strong starts here.</Text>
         <Text style={S.h1}>{title}</Text>
         <View style={{ height: 14 }} />
 
