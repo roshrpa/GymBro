@@ -10,7 +10,7 @@
       "supportsTablet": false
     },
     "android": {
-      "package": "com.gymbuddy.app",
+      "package": "com.gymbro.app",
       "versionCode": 1
     }
   }

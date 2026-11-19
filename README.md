@@ -67,7 +67,7 @@ service cloud.firestore {
 
 ## Google sign-in
 1. Firebase console → Authentication → Sign-in method → **Google → Enable** (set a support email).
-2. Project settings → Your apps → **Add app → Android**: package `com.gymbuddy.app`, SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the standard debug keystore Expo uses for the CI release build).
+2. Project settings → Your apps → **Add app → Android**: package `com.gymbro.app`, SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the standard debug keystore Expo uses for the CI release build).
 3. Download `google-services.json` into the repo root (next to `package.json`) and commit it.
 4. Copy the **Web client ID** (Authentication → Google → Web SDK configuration) into `src/config.js`.
 
