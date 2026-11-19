@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { S, C } from '../theme';
 import { signIn, signUp, resetPassword, friendlyError } from '../auth';
+import { googleEnabled, signInWithGoogle, googleErrorMessage } from '../googleAuth';
 
 export default function Auth() {
   const [mode, setMode] = useState('login'); // login | signup | reset
@@ -34,6 +35,19 @@ export default function Auth() {
       }
     } catch (e) {
       setError(friendlyError(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const google = async () => {
+    setError('');
+    setInfo('');
+    setBusy(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError(googleErrorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -87,6 +101,19 @@ export default function Auth() {
         <TouchableOpacity style={[S.btn, busy && { opacity: 0.6 }]} onPress={submit} disabled={busy}>
           {busy ? <ActivityIndicator color={C.onAccent} /> : <Text style={S.btnText}>{mode === 'login' ? 'Log in' : mode === 'signup' ? 'Sign up' : 'Send reset link'}</Text>}
         </TouchableOpacity>
+
+        {googleEnabled && mode !== 'reset' && (
+          <>
+            <Text style={[S.sub, { textAlign: 'center', marginVertical: 14 }]}>or</Text>
+            <TouchableOpacity
+              style={[S.btn, { marginTop: 0, backgroundColor: C.card, borderWidth: 1, borderColor: C.border }, busy && { opacity: 0.6 }]}
+              onPress={google}
+              disabled={busy}
+            >
+              <Text style={[S.btnText, { color: C.text }]}>Continue with Google</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <View style={{ marginTop: 22, gap: 14, alignItems: 'center' }}>
           {mode === 'login' && (

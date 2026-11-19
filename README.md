@@ -64,3 +64,12 @@ service cloud.firestore {
   }
 }
 ```
+
+## Google sign-in
+1. Firebase console → Authentication → Sign-in method → **Google → Enable** (set a support email).
+2. Project settings → Your apps → **Add app → Android**: package `com.gymbuddy.app`, SHA-1 `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25` (the standard debug keystore Expo uses for the CI release build).
+3. Download `google-services.json` into the repo root (next to `package.json`) and commit it.
+4. Copy the **Web client ID** (Authentication → Google → Web SDK configuration) into `src/config.js`.
+
+## In-app updates
+The CI stamps each build with its run number and writes `build N` into the "latest" release notes. The app compares its own build number with the release and offers to download the new APK (More tab, plus a banner on Today). Updates install over the old app because every build uses the same package name and signing key.

@@ -1,12 +1,13 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Linking } from 'react-native';
 import { S, C } from '../theme';
 import { DAY_NAMES, workoutForWeekday } from '../data/splits';
 import { MUSCLE_LABEL } from '../data/exercises';
 import { summary } from '../utils/health';
 import { weekStreak, workoutsThisWeek } from '../utils/logs';
 
-export default function Home({ profile, plan, logs, onOpenWorkout }) {
+export default function Home({ profile, plan, logs, onOpenWorkout, update }) {
   const today = new Date().getDay();
   const todays = workoutForWeekday(plan, today);
   const h = summary(profile);
@@ -17,6 +18,13 @@ export default function Home({ profile, plan, logs, onOpenWorkout }) {
     <ScrollView style={S.screen} contentContainerStyle={S.pad}>
       <Text style={S.h1}>Hey, {profile.name}</Text>
       <Text style={[S.sub, { marginBottom: 18 }]}>{DAY_NAMES[today]}</Text>
+
+      {update && update.available && update.url ? (
+        <TouchableOpacity style={[S.card, { borderColor: C.accent, marginBottom: 14 }]} onPress={() => Linking.openURL(update.url)}>
+          <Text style={{ color: C.accent, fontWeight: '800' }}>Update available (build {update.build})</Text>
+          <Text style={S.sub}>Tap to download the new GymBro APK, then open it to install.</Text>
+        </TouchableOpacity>
+      ) : null}
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
         <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>

@@ -17,6 +17,8 @@ import Calculators from './src/screens/Calculators';
 import Progress from './src/screens/Progress';
 import Diary from './src/screens/Diary';
 import { pruneDiary } from './src/utils/diary';
+import { checkForUpdate } from './src/utils/update';
+import { BUILD } from './src/buildInfo';
 import More from './src/screens/More';
 
 const TABS = [
@@ -35,6 +37,7 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [logs, setLogs] = useState([]);
   const [diary, setDiary] = useState([]);
+  const [update, setUpdate] = useState(null); // { available, build, url } | { error }
   const [editing, setEditing] = useState(false);
   const [tab, setTab] = useState('home');
   const [moreScreen, setMoreScreen] = useState(null);
@@ -43,6 +46,15 @@ export default function App() {
   const [user, setUser] = useState(undefined); // undefined = checking, null = logged out
 
   useEffect(() => watchAuth((u) => setUser(u || null)), []);
+
+  const runUpdateCheck = async () => {
+    const r = await checkForUpdate(BUILD);
+    setUpdate(r);
+    return r;
+  };
+  useEffect(() => {
+    runUpdateCheck();
+  }, []);
 
   useEffect(() => {
     if (user === undefined) return;
@@ -118,7 +130,7 @@ export default function App() {
         onBack={() => setWorkout(null)}
       />
     );
-  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} />;
+  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} update={update} />;
   else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} />;
   else if (tab === 'diary') body = <Diary profile={profile} logs={logs} entries={diary} onChange={onChangeDiary} />;
   else if (tab === 'progress') body = <Progress profile={profile} logs={logs} onLogWeight={onLogWeight} />;
@@ -136,7 +148,7 @@ export default function App() {
         )}
       </View>
     );
-  } else body = <More onOpen={setMoreScreen} email={user && user.email} onLogout={signOut} />;
+  } else body = <More onOpen={setMoreScreen} email={user && user.email} onLogout={signOut} update={update} onCheckUpdate={runUpdateCheck} />;
 
   const showTabs = !!user && !loading && profile && !editing && !workout;
 
