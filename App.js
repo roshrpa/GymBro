@@ -17,6 +17,7 @@ import Calculators from './src/screens/Calculators';
 import Progress from './src/screens/Progress';
 import Diary from './src/screens/Diary';
 import { pruneDiary } from './src/utils/diary';
+import { changeWorkout } from './src/utils/schedule';
 import { checkForUpdate } from './src/utils/update';
 import { BUILD } from './src/buildInfo';
 import More from './src/screens/More';
@@ -83,7 +84,8 @@ export default function App() {
   const plan = useMemo(() => (profile ? buildPlan(profile.daysPerWeek) : []), [profile]);
 
   const onSave = async (p) => {
-    const full = { ...applyProfileUpdate(profile, p), email: user ? user.email : undefined };
+    const keep = profile && profile.daysPerWeek === p.daysPerWeek ? profile.overrides : {}; // new split -> old changes no longer apply
+    const full = { ...applyProfileUpdate(profile, { ...p, overrides: keep || {} }), email: user ? user.email : undefined };
     await saveProfile(full);
     setProfile(full);
     setEditing(false);
@@ -93,6 +95,18 @@ export default function App() {
 
   const onLogWeight = async (kg) => {
     const full = applyProfileUpdate(profile, { ...profile, weightKg: kg });
+    await saveProfile(full);
+    setProfile(full);
+  };
+
+  const onChangeDay = async (key, desc) => {
+    const full = applyProfileUpdate(profile, { ...profile, overrides: changeWorkout(plan, profile.overrides || {}, key, desc) });
+    await saveProfile(full);
+    setProfile(full);
+  };
+
+  const onResetPlan = async () => {
+    const full = applyProfileUpdate(profile, { ...profile, overrides: {} });
     await saveProfile(full);
     setProfile(full);
   };
@@ -130,8 +144,8 @@ export default function App() {
         onBack={() => setWorkout(null)}
       />
     );
-  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} update={update} />;
-  else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} />;
+  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} update={update} onChangeDay={onChangeDay} />;
+  else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} onChangeDay={onChangeDay} onResetPlan={onResetPlan} />;
   else if (tab === 'diary') body = <Diary profile={profile} logs={logs} entries={diary} onChange={onChangeDiary} />;
   else if (tab === 'progress') body = <Progress profile={profile} logs={logs} onLogWeight={onLogWeight} />;
   else if (tab === 'diet') body = <Diet profile={profile} />;

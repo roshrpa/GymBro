@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Linking } from 'react-native';
 import { S, C } from '../theme';
-import { DAY_NAMES, workoutForWeekday } from '../data/splits';
+import { DAY_NAMES } from '../data/splits';
+import { dayKey } from '../utils/diary';
+import { workoutOn, isChanged } from '../utils/schedule';
+import WorkoutPicker from '../components/WorkoutPicker';
 import { MUSCLE_LABEL } from '../data/exercises';
 import { summary } from '../utils/health';
 import { weekStreak, workoutsThisWeek } from '../utils/logs';
 
-export default function Home({ profile, plan, logs, onOpenWorkout, update }) {
+export default function Home({ profile, plan, logs, onOpenWorkout, update, onChangeDay }) {
+  const [picking, setPicking] = useState(false);
   const today = new Date().getDay();
-  const todays = workoutForWeekday(plan, today);
+  const todays = workoutOn(plan, profile.overrides || {}, dayKey());
+  const changedToday = isChanged(profile.overrides || {}, dayKey());
   const h = summary(profile);
   const doneToday = logs.some((l) => new Date(l.date).toDateString() === new Date().toDateString());
   const streak = weekStreak(logs);
@@ -38,21 +43,42 @@ export default function Home({ profile, plan, logs, onOpenWorkout, update }) {
       </View>
 
       {todays ? (
-        <TouchableOpacity style={[S.card, { backgroundColor: C.accent, borderColor: C.accent, padding: 22 }]} onPress={() => onOpenWorkout(todays)}>
-          <Text style={{ color: C.onAccent, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 }}>TODAY'S WORKOUT</Text>
-          <Text style={[S.h1, { marginTop: 6, color: C.onAccent, fontSize: 44, lineHeight: 44 }]}>{todays.title}</Text>
-          <Text style={{ color: C.onAccent, fontWeight: '600' }}>{todays.blocks.map((b) => MUSCLE_LABEL[b.muscle]).join(' • ')}</Text>
-          <View style={[S.btn, { backgroundColor: C.onAccent }]}>
-            <Text style={[S.btnText, { color: C.accent }]}>{doneToday ? 'Log another session ▶' : 'Start workout ▶'}</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={[S.card, { backgroundColor: C.accent, borderColor: C.accent, padding: 22 }]}>
+          <TouchableOpacity onPress={() => onOpenWorkout(todays)}>
+            <Text style={{ color: C.onAccent, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 }}>
+              {changedToday ? "TODAY'S WORKOUT (CHANGED)" : "TODAY'S WORKOUT"}
+            </Text>
+            <Text style={[S.h1, { marginTop: 6, color: C.onAccent, fontSize: 44, lineHeight: 44 }]}>{todays.title}</Text>
+            <Text style={{ color: C.onAccent, fontWeight: '600' }}>{todays.blocks.map((b) => MUSCLE_LABEL[b.muscle]).join(' • ')}</Text>
+            <View style={[S.btn, { backgroundColor: C.onAccent }]}>
+              <Text style={[S.btnText, { color: C.accent }]}>{doneToday ? 'Log another session ▶' : 'Start workout ▶'}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPicking(true)} style={{ alignItems: 'center', paddingTop: 14 }}>
+            <Text style={{ color: C.onAccent, fontWeight: '800', textDecorationLine: 'underline' }}>Train something else today</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <View style={S.card}>
           <Text style={S.sub}>TODAY</Text>
           <Text style={[S.h1, { marginTop: 6 }]}>Rest day</Text>
           <Text style={S.sub}>Recovery is when muscles grow. Eat well, sleep 7-8 hours, drink water.</Text>
+          <TouchableOpacity style={[S.btn, { backgroundColor: C.card, borderWidth: 1, borderColor: C.accent }]} onPress={() => setPicking(true)}>
+            <Text style={[S.btnText, { color: C.accent }]}>Train anyway</Text>
+          </TouchableOpacity>
         </View>
       )}
+
+      <WorkoutPicker
+        visible={picking}
+        dateLabel="Today"
+        plan={plan}
+        onClose={() => setPicking(false)}
+        onPick={(desc) => {
+          onChangeDay(dayKey(), desc);
+          setPicking(false);
+        }}
+      />
 
       <View style={S.card}>
         <Text style={S.sub}>YOUR BMI</Text>
