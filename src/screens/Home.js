@@ -3,14 +3,14 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Linking } from 'react-native';
 import { S, C } from '../theme';
 import { DAY_NAMES } from '../data/splits';
-import { dayKey } from '../utils/diary';
+import { dayKey, activeDaysThisWeek } from '../utils/diary';
 import { workoutOn, isChanged } from '../utils/schedule';
 import WorkoutPicker from '../components/WorkoutPicker';
 import { MUSCLE_LABEL } from '../data/exercises';
 import { summary } from '../utils/health';
 import { weekStreak, workoutsThisWeek } from '../utils/logs';
 
-export default function Home({ profile, plan, logs, onOpenWorkout, update, onChangeDay }) {
+export default function Home({ profile, plan, logs, onOpenWorkout, update, onChangeDay, entries = [] }) {
   const [picking, setPicking] = useState(false);
   const today = new Date().getDay();
   const todays = workoutOn(plan, profile.overrides || {}, dayKey());
@@ -39,6 +39,10 @@ export default function Home({ profile, plan, logs, onOpenWorkout, update, onCha
         <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
           <Text style={{ color: C.accent, fontSize: 28, fontWeight: '900' }}>{streak}</Text>
           <Text style={S.sub}>Week streak</Text>
+        </View>
+        <View style={[S.card, { flex: 1, marginBottom: 0, alignItems: 'center' }]}>
+          <Text style={{ color: C.text, fontSize: 28, fontWeight: '900' }}>{activeDaysThisWeek(logs, entries)}</Text>
+          <Text style={S.sub}>Active days</Text>
         </View>
       </View>
 

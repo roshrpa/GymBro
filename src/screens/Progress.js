@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { S, C } from '../theme';
+import { monthActivityDays } from '../utils/diary';
 import {
   exerciseTrend, formatKg, monthWorkoutDays, personalRecords, sessionVolume, weekStreak, workoutsThisWeek,
 } from '../utils/logs';
@@ -123,11 +124,12 @@ function Overview({ profile, logs, onLogWeight }) {
   );
 }
 
-function History({ logs }) {
+function History({ logs, entries = [] }) {
   const today = new Date();
   const [ym, setYm] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [open, setOpen] = useState(null);
   const days = monthWorkoutDays(logs, ym.y, ym.m);
+  const actDays = monthActivityDays(entries, ym.y, ym.m);
   const first = (new Date(ym.y, ym.m, 1).getDay() + 6) % 7; // Monday = 0
   const count = new Date(ym.y, ym.m + 1, 0).getDate();
   const cells = [...Array(first).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)];
@@ -160,7 +162,8 @@ function History({ logs }) {
                   style={{
                     width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
                     backgroundColor: days.has(d) ? C.accent : 'transparent',
-                    borderWidth: isToday(d) ? 1 : 0, borderColor: C.text,
+                    borderWidth: isToday(d) || (actDays.has(d) && !days.has(d)) ? 1 : 0,
+                    borderColor: actDays.has(d) && !days.has(d) ? C.accent : C.text,
                   }}
                 >
                   <Text style={{ color: days.has(d) ? C.onAccent : C.text, fontWeight: days.has(d) ? '800' : '400' }}>{d}</Text>
@@ -213,7 +216,7 @@ function Records({ logs }) {
   ));
 }
 
-export default function Progress({ profile, logs, onLogWeight }) {
+export default function Progress({ profile, logs, onLogWeight, entries = [] }) {
   const [tab, setTab] = useState('overview');
   return (
     <ScrollView style={S.screen} contentContainerStyle={S.pad} keyboardShouldPersistTaps="handled">
@@ -226,7 +229,7 @@ export default function Progress({ profile, logs, onLogWeight }) {
         ))}
       </View>
       {tab === 'overview' && <Overview profile={profile} logs={logs} onLogWeight={onLogWeight} />}
-      {tab === 'history' && <History logs={logs} />}
+      {tab === 'history' && <History logs={logs} entries={entries} />}
       {tab === 'records' && <Records logs={logs} />}
     </ScrollView>
   );

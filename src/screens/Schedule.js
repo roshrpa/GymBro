@@ -13,7 +13,7 @@ const label = (key) => {
   return `${DAY_NAMES[dt.getDay()]} ${dt.getDate()}/${dt.getMonth() + 1}`;
 };
 
-export default function Schedule({ profile, plan, onOpenWorkout, onChangeDay, onResetPlan }) {
+export default function Schedule({ profile, plan, onOpenWorkout, onChangeDay, onResetPlan, entries = [] }) {
   const [editKey, setEditKey] = useState(null);
   const today = dayKey();
   const overrides = profile.overrides || {};
@@ -31,6 +31,7 @@ export default function Schedule({ profile, plan, onOpenWorkout, onChangeDay, on
         const w = workoutOn(plan, overrides, key);
         const isToday = key === today;
         const changed = isChanged(overrides, key);
+        const acts = entries.filter((e) => e.kind === 'activity' && e.date === key);
         return (
           <View key={key} style={[S.card, isToday && { borderColor: C.accent }, !w && { opacity: 0.8 }]}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -47,6 +48,11 @@ export default function Schedule({ profile, plan, onOpenWorkout, onChangeDay, on
                 <Text style={[S.sub, { marginTop: 4 }]}>Rest</Text>
               )}
             </TouchableOpacity>
+            {acts.length > 0 && (
+              <Text style={{ color: C.accent, marginTop: 6, fontWeight: '600' }}>
+                Also: {acts.map((a) => `${a.name} ${a.minutes} min`).join(', ')}
+              </Text>
+            )}
             <TouchableOpacity onPress={() => setEditKey(key)} style={{ marginTop: 10, alignSelf: 'flex-start' }}>
               <Text style={{ color: C.accent, fontWeight: '800' }}>{w ? 'Change workout' : 'Train anyway'}</Text>
             </TouchableOpacity>

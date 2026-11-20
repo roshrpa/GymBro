@@ -73,3 +73,32 @@ export function pruneDiary(entries) {
   const cutoff = shiftDay(dayKey(), -MAX_DIARY_DAYS);
   return entries.filter((e) => e.date >= cutoff);
 }
+
+// Days (of month, 0-11 month) with any non-gym activity logged
+export function monthActivityDays(entries, year, month) {
+  const days = new Set();
+  for (const e of entries) {
+    if (e.kind !== 'activity') continue;
+    const [y, m, d] = e.date.split('-').map(Number);
+    if (y === year && m - 1 === month) days.add(d);
+  }
+  return days;
+}
+
+// number of distinct days this week (Mon-Sun) with a gym session or other activity
+export function activeDaysThisWeek(logs, entries, now = new Date()) {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  const keys = new Set();
+  for (let i = 0; i < 7; i++) keys.add(dayKey(new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)));
+  const active = new Set();
+  logs.forEach((l) => {
+    const k = dayKey(new Date(l.date));
+    if (keys.has(k)) active.add(k);
+  });
+  entries.forEach((e) => {
+    if (e.kind === 'activity' && keys.has(e.date)) active.add(e.date);
+  });
+  return active.size;
+}

@@ -144,10 +144,10 @@ export default function App() {
         onBack={() => setWorkout(null)}
       />
     );
-  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} update={update} onChangeDay={onChangeDay} />;
-  else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} onChangeDay={onChangeDay} onResetPlan={onResetPlan} />;
+  } else if (tab === 'home') body = <Home profile={profile} plan={plan} logs={logs} onOpenWorkout={setWorkout} update={update} onChangeDay={onChangeDay} entries={diary} />;
+  else if (tab === 'schedule') body = <Schedule profile={profile} plan={plan} onOpenWorkout={setWorkout} onChangeDay={onChangeDay} onResetPlan={onResetPlan} entries={diary} />;
   else if (tab === 'diary') body = <Diary profile={profile} logs={logs} entries={diary} onChange={onChangeDiary} />;
-  else if (tab === 'progress') body = <Progress profile={profile} logs={logs} onLogWeight={onLogWeight} />;
+  else if (tab === 'progress') body = <Progress profile={profile} logs={logs} onLogWeight={onLogWeight} entries={diary} />;
   else if (tab === 'diet') body = <Diet profile={profile} />;
   else if (moreScreen) {
     body = (

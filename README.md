@@ -73,3 +73,6 @@ service cloud.firestore {
 
 ## In-app updates
 The CI stamps each build with its run number and writes `build N` into the "latest" release notes. The app compares its own build number with the release and offers to download the new APK (More tab, plus a banner on Today). Updates install over the old app because every build uses the same package name and signing key.
+
+## Samsung Health import (Android)
+Samsung Health -> Health Connect -> GymBro. In Samsung Health: Settings -> Health Connect -> allow sharing exercise, distance and calories (needs "Sync with Samsung account" on). In GymBro: Diary -> Import from Samsung Health, then pick which sessions to add. Nothing is added automatically.

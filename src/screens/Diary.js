@@ -2,10 +2,18 @@ import React, { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { S, C } from '../theme';
 import { FOOD_DB, ACTIVITIES } from '../data/foodDb';
+import { fetchHealthActivities } from '../healthConnect';
 import { dailyCalories } from '../utils/health';
 import {
   dayKey, shiftDay, entriesFor, foodTotals, gymBurn, otherBurn, dayBalance, activityKcal, recentFoods, round,
 } from '../utils/diary';
+
+const ACTS = [...ACTIVITIES, { name: 'Other', met: 0, custom: true }];
+const INTENSITY = [
+  { label: 'Light', met: 3 },
+  { label: 'Moderate', met: 5 },
+  { label: 'Vigorous', met: 8 },
+];
 
 const num = (s) => {
   const n = parseFloat(String(s).replace(',', '.'));
@@ -39,6 +47,10 @@ export default function Diary({ profile, logs, entries, onChange }) {
   const [customKcal, setCustomKcal] = useState('');
   const [mins, setMins] = useState('30');
   const [actPicked, setActPicked] = useState(null);
+  const [customName, setCustomName] = useState('');
+  const [intensity, setIntensity] = useState(INTENSITY[1]);
+  const [dist, setDist] = useState('');
+  const [hc, setHc] = useState(null); // { busy } | { items } | { error }
 
   const target = dailyCalories(profile).target;
   const foods = entriesFor(entries, day, 'food');
@@ -57,7 +69,7 @@ export default function Diary({ profile, logs, entries, onChange }) {
   const recents = useMemo(() => recentFoods(entries), [entries]);
 
   const reset = () => {
-    setMode(null); setQuery(''); setPicked(null); setQty('1'); setCustomKcal(''); setActPicked(null); setMins('30');
+    setMode(null); setQuery(''); setPicked(null); setQty('1'); setCustomKcal(''); setActPicked(null); setMins('30'); setCustomName(''); setDist('');
   };
   const add = (e) => onChange([...entries, { id: uid(), date: day, ts: Date.now(), ...e }]);
   const remove = (id) => onChange(entries.filter((e) => e.id !== id));
@@ -77,11 +89,32 @@ export default function Diary({ profile, logs, entries, onChange }) {
   const quickAdd = (e) =>
     add({ kind: 'food', name: e.name, serving: e.serving, qty: e.qty, kcal: e.kcal, protein: e.protein || 0 });
 
+  const actMet = actPicked ? (actPicked.custom ? intensity.met : actPicked.met) : 0;
+  const actName = actPicked ? (actPicked.custom ? customName.trim() : actPicked.name) : '';
   const addActivity = () => {
     const m = num(mins);
-    if (!actPicked || !m) return;
-    add({ kind: 'activity', name: actPicked.name, minutes: m, kcal: activityKcal(profile.weightKg, actPicked.met, m) });
+    if (!actPicked || !m || !actName) return;
+    const km = num(dist);
+    add({ kind: 'activity', name: actName, minutes: m, kcal: activityKcal(profile.weightKg, actMet, m), ...(km ? { distanceKm: km } : {}) });
     reset();
+  };
+
+  const importedIds = new Set(entries.filter((e) => e.hcId).map((e) => e.hcId));
+  const loadHealth = async () => {
+    setHc({ busy: true });
+    setHc(await fetchHealthActivities(day, profile.weightKg));
+  };
+  const addImported = (items) => {
+    const fresh = items.filter((i) => !importedIds.has(i.hcId));
+    if (!fresh.length) return;
+    const stamp = Date.now();
+    onChange([
+      ...entries,
+      ...fresh.map((i, n) => ({
+        id: uid(), date: day, ts: stamp + n, kind: 'activity', name: i.name, minutes: i.minutes, kcal: i.kcal,
+        ...(i.distanceKm ? { distanceKm: i.distanceKm } : {}), hcId: i.hcId, source: 'health',
+      })),
+    ]);
   };
 
   const statusColor = bal.over ? '#ff453a' : C.accent;
@@ -213,7 +246,7 @@ export default function Diary({ profile, logs, entries, onChange }) {
           <View key={e.id} style={[S.card, { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, marginBottom: 8 }]}>
             <View style={{ flex: 1 }}>
               <Text style={{ color: C.text, fontWeight: '700' }}>{e.name}</Text>
-              <Text style={S.sub}>{e.minutes} min</Text>
+              <Text style={S.sub}>{e.minutes} min{e.distanceKm ? ` • ${e.distanceKm} km` : ''}{e.source === 'health' ? ' • Samsung Health' : ''}</Text>
             </View>
             <Text style={{ color: C.accent, fontWeight: '800', marginRight: 12 }}>-{e.kcal} kcal</Text>
             <TouchableOpacity onPress={() => remove(e.id)}><Text style={{ color: C.sub, fontSize: 18 }}>✕</Text></TouchableOpacity>
@@ -229,27 +262,74 @@ export default function Diary({ profile, logs, entries, onChange }) {
         {mode === 'activity' && (
           <View style={S.card}>
             <View style={S.row}>
-              {ACTIVITIES.map((a) => (
+              {ACTS.map((a) => (
                 <TouchableOpacity key={a.name} style={[S.chip, actPicked && actPicked.name === a.name && S.chipOn]} onPress={() => setActPicked(a)}>
                   <Text style={[S.chipText, actPicked && actPicked.name === a.name && S.chipTextOn]}>{a.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
+            {actPicked && actPicked.custom && (
+              <>
+                <Text style={S.label}>Activity name</Text>
+                <TextInput style={S.input} value={customName} onChangeText={setCustomName} placeholder="e.g. Tennis" placeholderTextColor="#667" />
+                <Text style={S.label}>How hard was it?</Text>
+                <View style={S.row}>
+                  {INTENSITY.map((i) => (
+                    <TouchableOpacity key={i.label} style={[S.chip, intensity.label === i.label && S.chipOn]} onPress={() => setIntensity(i)}>
+                      <Text style={[S.chipText, intensity.label === i.label && S.chipTextOn]}>{i.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
             <Text style={S.label}>Minutes</Text>
             <TextInput style={S.input} value={mins} onChangeText={setMins} keyboardType="numeric" />
+            <Text style={S.label}>Distance in km (optional)</Text>
+            <TextInput style={S.input} value={dist} onChangeText={setDist} keyboardType="decimal-pad" placeholder="e.g. 5" placeholderTextColor="#667" />
             {actPicked && (
               <Text style={{ color: C.accent, fontWeight: '800', marginBottom: 8 }}>
-                about {activityKcal(profile.weightKg, actPicked.met, num(mins))} kcal burned
+                about {activityKcal(profile.weightKg, actMet, num(mins))} kcal burned
               </Text>
             )}
-            <TouchableOpacity style={[S.btn, !actPicked && { opacity: 0.5 }]} onPress={addActivity} disabled={!actPicked}>
+            <TouchableOpacity style={[S.btn, (!actPicked || !actName) && { opacity: 0.5 }]} onPress={addActivity} disabled={!actPicked || !actName}>
               <Text style={S.btnText}>Add activity</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={reset} style={{ alignItems: 'center', paddingTop: 14 }}><Text style={S.sub}>Cancel</Text></TouchableOpacity>
           </View>
         )}
+        <TouchableOpacity style={[S.btn, { backgroundColor: C.card, borderWidth: 1, borderColor: C.border }]} onPress={loadHealth} disabled={hc && hc.busy}>
+          <Text style={[S.btnText, { color: C.text }]}>{hc && hc.busy ? 'Reading...' : 'Import from Samsung Health'}</Text>
+        </TouchableOpacity>
+        {hc && hc.error ? <Text style={{ color: '#ff453a', marginTop: 8 }}>{hc.error}</Text> : null}
+        {hc && hc.items ? (
+          <View style={[S.card, { marginTop: 10 }]}>
+            <Text style={{ color: C.text, fontWeight: '800', marginBottom: 6 }}>Found for {prettyDay(day)}</Text>
+            {hc.items.length === 0 && <Text style={S.sub}>No exercise sessions found. Check that Samsung Health shares data with Health Connect.</Text>}
+            {hc.items.map((i) => {
+              const added = importedIds.has(i.hcId);
+              return (
+                <View key={i.hcId} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: C.border }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: C.text, fontWeight: '700' }}>{i.name}</Text>
+                    <Text style={S.sub}>{i.minutes} min{i.distanceKm ? ` • ${i.distanceKm} km` : ''} • {i.kcal} kcal</Text>
+                  </View>
+                  {added ? (
+                    <Text style={S.sub}>Added</Text>
+                  ) : (
+                    <TouchableOpacity onPress={() => addImported([i])}><Text style={{ color: C.accent, fontWeight: '800' }}>Add</Text></TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
+            {hc.items.some((i) => !importedIds.has(i.hcId)) && (
+              <TouchableOpacity style={[S.btn, { marginTop: 12 }]} onPress={() => addImported(hc.items)}>
+                <Text style={S.btnText}>Add all</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
         <Text style={[S.sub, { marginTop: 14, fontSize: 12 }]}>
-          Calories are approximate averages (home-cooked portions vary). Burn estimates use MET values and your body weight.
+          Strength sessions from Samsung Health may duplicate a gym workout you logged here. Calories are approximate averages (home-cooked portions vary). Burn estimates use MET values and your body weight.
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

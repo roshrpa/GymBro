@@ -53,3 +53,38 @@ test('prune drops old entries', () => {
   const now = { kind: 'food', date: dayKey(), kcal: 1 };
   assert.deepEqual(pruneDiary([old, now]), [now]);
 });
+
+import { monthActivityDays, activeDaysThisWeek } from '../src/utils/diary.js';
+import { normalizeSessions } from '../src/utils/healthImport.js';
+
+test('activity days and active days this week', () => {
+  const entries = [
+    { kind: 'activity', date: '2026-11-18', kcal: 100 },
+    { kind: 'activity', date: '2026-11-18', kcal: 50 },
+    { kind: 'food', date: '2026-11-19', kcal: 50 },
+    { kind: 'activity', date: '2026-10-30', kcal: 50 },
+  ];
+  assert.deepEqual([...monthActivityDays(entries, 2026, 10)], [18]);
+  const logs = [{ date: new Date(2026, 10, 17, 18).toISOString() }];
+  // week of Mon 16 Nov: gym on 17th + activity on 18th
+  assert.equal(activeDaysThisWeek(logs, entries, new Date(2026, 10, 20)), 2);
+});
+
+test('health import: dedupe, calories from records, MET fallback, distance', () => {
+  const sessions = [
+    { startTime: '2026-11-20T04:00:00Z', endTime: '2026-11-20T04:30:00Z', exerciseType: 56, metadata: { id: 'a' } },
+    { startTime: '2026-11-20T04:00:00Z', endTime: '2026-11-20T04:30:00Z', exerciseType: 56, metadata: { id: 'b' } },
+    { startTime: '2026-11-20T10:00:00Z', endTime: '2026-11-20T11:00:00Z', exerciseType: 14, metadata: { id: 'c' } },
+    { startTime: '2026-11-20T12:00:00Z', endTime: '2026-11-20T12:00:20Z', exerciseType: 79, metadata: { id: 'd' } },
+  ];
+  const calories = [{ startTime: '2026-11-20T04:00:00Z', endTime: '2026-11-20T04:30:00Z', energy: { inKilocalories: 310 } }];
+  const distances = [{ startTime: '2026-11-20T04:00:00Z', endTime: '2026-11-20T04:30:00Z', distance: { inMeters: 5240 } }];
+  const out = normalizeSessions({ sessions, calories, distances, weightKg: 80 });
+  assert.equal(out.length, 2); // duplicate and sub-minute session dropped
+  assert.equal(out[0].name, 'Running');
+  assert.equal(out[0].kcal, 310);
+  assert.equal(out[0].distanceKm, 5.2);
+  assert.equal(out[0].minutes, 30);
+  assert.equal(out[1].name, 'Cricket');
+  assert.equal(out[1].kcal, Math.round(4.8 * 80)); // fallback MET estimate
+});
